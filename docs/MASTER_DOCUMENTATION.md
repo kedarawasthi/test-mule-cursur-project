@@ -23,6 +23,9 @@ This is the consolidated index and navigation page for the full documentation se
 
 - Primary import-ready collection:
   - `postman/american-airlines-info-api-playground.postman_collection.json`
+- Environments:
+  - `postman/american-airlines-info-api-cloudhub.postman_environment.json`
+  - `postman/american-airlines-info-api-local.postman_environment.json`
 - Alternate collections:
   - `postman/american-airlines-info-api-cloudhub.postman_collection.json`
   - `postman/american-airlines-info-api.postman_collection.json`

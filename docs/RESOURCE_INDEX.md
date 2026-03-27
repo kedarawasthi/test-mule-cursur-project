@@ -58,6 +58,8 @@ This index catalogs all major project resources, operational artifacts, and gove
 - `postman/american-airlines-info-api.postman_collection.json` - Local/Postman collection.
 - `postman/american-airlines-info-api-cloudhub.postman_collection.json` - CloudHub Postman collection.
 - `postman/american-airlines-info-api-playground.postman_collection.json` - Import-ready, purpose-driven collection with descriptive naming for all services.
+- `postman/american-airlines-info-api-cloudhub.postman_environment.json` - CloudHub environment variables for one-click execution.
+- `postman/american-airlines-info-api-local.postman_environment.json` - Local environment variables (`localhost`) for quick testing.
 
 ## 8) Generated Reports
 

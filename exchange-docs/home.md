@@ -87,7 +87,36 @@ flowchart LR
 
 - Import-ready collection for all services:
   - `postman/american-airlines-info-api-playground.postman_collection.json`
+- Import-ready environments:
+  - `postman/american-airlines-info-api-cloudhub.postman_environment.json`
+  - `postman/american-airlines-info-api-local.postman_environment.json`
 - Includes clear request naming, purpose descriptions, and cURL references for:
   - All `/api/flights` business services
   - Batch endpoint
   - All DataWeave demo endpoints
+
+## Error Handling Diagram
+
+```mermaid
+flowchart TD
+    Req[Incoming API request] --> Main[APIKit main flow]
+    Main --> Impl{Implementation success?}
+    Impl -- Yes --> Success[2xx success response]
+    Impl -- No --> Type{Error type}
+    Type -- Not Found --> E404[404 response payload]
+    Type -- Business Validation --> E409[409 response payload]
+    Type -- Bad Request --> E400[400 response payload]
+    Type -- Unexpected --> E500[500 response payload]
+```
+
+## Flight Management Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Created: POST /api/flights
+    Created --> Retrieved: GET /api/flights/{ID}
+    Retrieved --> Updated: PUT /api/flights/{ID}
+    Updated --> Retrieved: GET /api/flights/{ID}
+    Retrieved --> Deleted: DELETE /api/flights/{ID}
+    Deleted --> [*]
+```

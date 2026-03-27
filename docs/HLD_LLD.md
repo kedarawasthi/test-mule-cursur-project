@@ -141,3 +141,48 @@ flowchart LR
 - APIKit + custom error handler paths for HTTP status consistency
 - `logger` components include tx/correlation context
 - Rolling + JSON console logging in `log4j2.xml`
+
+### 2.7 Error Handling Flow Diagram
+
+```mermaid
+flowchart TD
+    IN[Request enters APIKit flow] --> TRY{Business flow succeeds?}
+    TRY -- Yes --> OK[Build success payload]
+    OK --> CODE200[Set status 200/201/202]
+    CODE200 --> OUT[Return response]
+
+    TRY -- No --> ERR{Error type}
+    ERR -- APP:NOT_FOUND --> N404[Map to 404 JSON message]
+    ERR -- BUSINESS_VALIDATION --> N409[Map to 409 validation payload]
+    ERR -- APIKIT:BAD_REQUEST --> N400[Map to 400 malformed request payload]
+    ERR -- Any other --> N500[Map to 500 generic error payload]
+    N404 --> OUT
+    N409 --> OUT
+    N400 --> OUT
+    N500 --> OUT
+```
+
+### 2.8 Flight Management Lifecycle Diagram
+
+```mermaid
+stateDiagram-v2
+    [*] --> Draft: Create Flight
+    Draft --> Scheduled: Save valid record
+    Scheduled --> Updated: Update Flight
+    Updated --> Scheduled: Re-plan / Update again
+    Scheduled --> Deleted: Delete by ID
+    Updated --> Deleted: Delete by ID
+    Deleted --> [*]
+```
+
+### 2.9 API-to-Implementation Mapping Diagram
+
+```mermaid
+flowchart LR
+    A1[GET /api/flights] --> F1[getAllFlights]
+    A2[GET /api/flights/{ID}] --> F2[getFlightById]
+    A3[POST /api/flights] --> F3[postFlights]
+    A4[PUT /api/flights/{ID}] --> F4[updateFlightById]
+    A5[DELETE /api/flights/{ID}] --> F5[deleteFlightById]
+    A6[POST /api/flights/batch] --> F6[postFlightsBatch]
+```
