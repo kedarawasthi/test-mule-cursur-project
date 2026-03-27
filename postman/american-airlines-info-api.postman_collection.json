@@ -1,0 +1,282 @@
+{
+  "info": {
+    "name": "American Airlines Info API",
+    "_postman_id": "f451b3d2-9f6c-4f4c-9c67-f4d7ecb8f4f1",
+    "description": "Generated collection for american-airlines-info-api endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Flights",
+      "item": [
+        {
+          "name": "Get All Flights",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/flights",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "flights"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Flight By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/flights/{{flightId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "flights",
+                "{{flightId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Flight",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ID\": 101,\n  \"code\": \"AA101\",\n  \"price\": 490,\n  \"departureDate\": \"2026-04-10T08:00:00Z\",\n  \"origin\": \"SFO\",\n  \"destination\": \"LAX\",\n  \"emptySeats\": 22,\n  \"plane\": {\n    \"type\": \"Boeing 737\",\n    \"totalSeats\": 180\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/flights",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "flights"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Flight",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"AA101-UPDATED\",\n  \"price\": 520,\n  \"departureDate\": \"2026-04-10T09:30:00Z\",\n  \"origin\": \"SFO\",\n  \"destination\": \"LAX\",\n  \"emptySeats\": 20,\n  \"plane\": {\n    \"type\": \"Boeing 737 MAX\",\n    \"totalSeats\": 180\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/flights/{{flightId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "flights",
+                "{{flightId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Flight",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/flights/{{flightId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "flights",
+                "{{flightId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Batch Upsert Flights",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"ID\": 201,\n    \"code\": \"AA201\",\n    \"price\": 640,\n    \"departureDate\": \"2026-05-01T07:00:00Z\",\n    \"origin\": \"CLE\",\n    \"destination\": \"SFO\",\n    \"emptySeats\": 18,\n    \"plane\": {\n      \"type\": \"Airbus A320\",\n      \"totalSeats\": 160\n    }\n  },\n  {\n    \"ID\": 202,\n    \"code\": \"AA202\",\n    \"price\": 710,\n    \"departureDate\": \"2026-05-01T11:00:00Z\",\n    \"origin\": \"SFO\",\n    \"destination\": \"LAX\",\n    \"emptySeats\": 24,\n    \"plane\": {\n      \"type\": \"Boeing 737\",\n      \"totalSeats\": 180\n    }\n  }\n]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/flights/batch",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "flights",
+                "batch"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "DataWeave Demos",
+      "item": [
+        {
+          "name": "DW Simple – JSON to JSON",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Field1\": \"hello world\",\n  \"phoneNumber\": \"555-123-4567\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dw/simple",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dw",
+                "simple"
+              ]
+            }
+          }
+        },
+        {
+          "name": "DW Complex – XML to JSON",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/xml"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<flights>\n  <flight>\n    <FlightId>AA100</FlightId>\n    <DepartureCity>SFO</DepartureCity>\n    <ArrivalCity>LAX</ArrivalCity>\n    <AvailableSeats>12</AvailableSeats>\n    <category>Domestic</category>\n    <price>320</price>\n    <options>\n      <option><id>OPT1</id></option>\n      <option><id>OPT2</id></option>\n    </options>\n  </flight>\n  <flight>\n    <FlightId>AA200</FlightId>\n    <DepartureCity>JFK</DepartureCity>\n    <ArrivalCity>LHR</ArrivalCity>\n    <AvailableSeats>0</AvailableSeats>\n    <category>International</category>\n    <price>1450</price>\n    <options>\n      <option><id>OPT3</id></option>\n    </options>\n  </flight>\n  <flight>\n    <FlightId>AA300</FlightId>\n    <DepartureCity>ORD</DepartureCity>\n    <ArrivalCity>MIA</ArrivalCity>\n    <AvailableSeats>5</AvailableSeats>\n    <category>Domestic</category>\n    <price>280</price>\n    <options>\n      <option><id>OPT4</id></option>\n    </options>\n  </flight>\n</flights>"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dw/complex",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dw",
+                "complex"
+              ]
+            }
+          }
+        },
+        {
+          "name": "DW Multi-Scenario 1 – JSON to XML",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"passengerName\": \"Jane Doe\",\n  \"flightNumber\": \"AA450\",\n  \"travelDate\": \"04/15/2026\",\n  \"flightClass\": \"Business\",\n  \"baggage\": [\n    {\"id\": \"BAG001\", \"weight\": 22},\n    {\"id\": \"BAG002\", \"weight\": 35},\n    {\"id\": \"BAG003\", \"weight\": 28}\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dw/multi1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dw",
+                "multi1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "DW Multi-Scenario 2 – XML to JSON",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/xml"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<flights>\n  <flight>\n    <id>FL901</id>\n    <src>JFK</src>\n    <dest>LAX</dest>\n    <deptTime>2026-04-20T14:30</deptTime>\n    <price>650</price>\n    <status>ACTIVE</status>\n  </flight>\n  <flight>\n    <id>FL902</id>\n    <src>ORD</src>\n    <dest>MIA</dest>\n    <deptTime>2026-04-21T09:00</deptTime>\n    <price>380</price>\n    <status>CANCELLED</status>\n  </flight>\n  <flight>\n    <id>FL903</id>\n    <src>JFK</src>\n    <dest>SFO</dest>\n    <deptTime>2026-04-22T16:45</deptTime>\n    <price>720</price>\n    <status>ACTIVE</status>\n  </flight>\n</flights>"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/dw/multi2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dw",
+                "multi2"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "flightId",
+      "value": "101"
+    }
+  ]
+}

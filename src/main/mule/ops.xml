@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+	<flow name="scheduledOperationalHeartbeat">
+		<scheduler doc:name="Heartbeat Scheduler">
+			<scheduling-strategy>
+				<fixed-frequency frequency="${ops.heartbeat.frequencySeconds}" timeUnit="SECONDS"/>
+			</scheduling-strategy>
+		</scheduler>
+		<set-variable variableName="transactionId" value="#[uuid()]" doc:name="Set Transaction ID"/>
+		<choice doc:name="Heartbeat Enabled?">
+			<when expression="#[p('ops.heartbeat.enabled') == 'true']">
+				<try doc:name="Heartbeat DB Check + External Log">
+					<db:select doc:name="Select Heartbeat" config-ref="MySql_Database_Config">
+						<db:sql><![CDATA[select 1 as ok]]></db:sql>
+					</db:select>
+					<set-variable variableName="heartbeatStatus" value="#[(payload[0].ok default 0) as Number]" doc:name="Set Heartbeat Status"/>
+					<logger level="INFO" doc:name="Heartbeat Success Log" message='txId=#[vars.transactionId] event=ops.heartbeat.success dbOk=#[vars.heartbeatStatus]'/>
+					<choice doc:name="External Logging Enabled?">
+						<when expression="#[p('external.logging.enabled') == 'true']">
+							<set-payload doc:name="Build External Log Payload" value='#[output application/json ---
+{
+  transactionId: vars.transactionId,
+  event: "ops.heartbeat.success",
+  dbOk: vars.heartbeatStatus,
+  timestamp: now() as String {format: "yyyy-MM-dd&apos;T&apos;HH:mm:ssXXX"}
+}]'/>
+							<http:request method="POST" doc:name="Post External Log" config-ref="external-logging-http-request-config" path="${external.logging.basePath}">
+								<http:headers><![CDATA[#[{
+  "Content-Type": "application/json",
+  "x-api-key": p("external.logging.apiKey")
+}]]]></http:headers>
+							</http:request>
+						</when>
+					</choice>
+					<error-handler>
+						<on-error-continue type="ANY">
+							<logger level="WARN" doc:name="Heartbeat Failure Log" message='txId=#[vars.transactionId] event=ops.heartbeat.failure detail=#[error.description default "unknown"]'/>
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</when>
+			<otherwise>
+				<logger level="DEBUG" doc:name="Heartbeat Disabled Log" message='txId=#[vars.transactionId] event=ops.heartbeat.skipped'/>
+			</otherwise>
+		</choice>
+	</flow>
+
+</mule>

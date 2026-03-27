@@ -1,0 +1,8 @@
+{
+    "name": "american-airlines-info-app",
+    "minMuleVersion": "4.6.0",
+    "requiredProduct": "MULE_EE",
+    "javaSpecificationVersions": [
+        "17"
+    ]
+}

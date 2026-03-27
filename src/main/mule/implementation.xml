@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+">
+
+	<flow name="getAllFlights" doc:id="365f2b01-afc9-48c4-ba5b-f45c28e15694">
+		<logger level="INFO" doc:name="Log getAllFlights Start" message='txId=#[vars.transactionId default correlationId] event=getAllFlights.start destination=#[attributes.queryParams.destination default ""]'/>
+		<flow-ref name="enforceCircuitBreaker" doc:name="Enforce Circuit Breaker"/>
+		<try doc:name="Fetch Flights">
+			<db:select doc:name="Select All Flights" config-ref="MySql_Database_Config">
+				<db:sql><![CDATA[
+select * from american
+where (:destination = '' or toAirport = :destination)
+]]></db:sql>
+				<db:input-parameters><![CDATA[#[{
+  destination: (attributes.queryParams.destination default "") as String
+}]]]></db:input-parameters>
+			</db:select>
+			<ee:transform doc:name="Transform Flight List">
+				<ee:message>
+					<ee:set-payload resource="dwl/flight-read-response.dwl" />
+				</ee:message>
+			</ee:transform>
+			<flow-ref name="recordDbSuccess" doc:name="Record DB Success"/>
+			<error-handler>
+				<on-error-propagate type="DB:*">
+					<flow-ref name="recordDbFailure" doc:name="Record DB Failure"/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</flow>
+
+	<flow name="getFlightById" doc:id="bce0cd61-ea8b-43a5-a448-6ffb58504bad">
+		<logger level="INFO" doc:name="Log getFlightById Start" message='txId=#[vars.transactionId default correlationId] event=getFlightById.start flightId=#[attributes.uriParams.ID default ""]'/>
+		<flow-ref name="enforceCircuitBreaker" doc:name="Enforce Circuit Breaker"/>
+		<try doc:name="Fetch Flight By ID">
+			<db:select doc:name="Select Flight By ID" config-ref="MySql_Database_Config">
+				<db:sql><![CDATA[select * from american where ID = :id]]></db:sql>
+				<db:input-parameters><![CDATA[#[{'id' : attributes.uriParams.ID}]]]></db:input-parameters>
+			</db:select>
+			<ee:transform doc:name="Transform Flight">
+				<ee:message>
+					<ee:set-payload resource="dwl/flight-read-response.dwl" />
+				</ee:message>
+			</ee:transform>
+			<flow-ref name="recordDbSuccess" doc:name="Record DB Success"/>
+			<error-handler>
+				<on-error-propagate type="DB:*">
+					<flow-ref name="recordDbFailure" doc:name="Record DB Failure"/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</flow>
+
+	<flow name="postFlights" doc:id="d2e39c92-6103-4b69-a20d-942ab493a309">
+		<logger level="INFO" doc:name="Log postFlights Start" message='txId=#[vars.transactionId default correlationId] event=postFlights.start flightId=#[payload.ID default ""]'/>
+		<flow-ref name="enforceCircuitBreaker" doc:name="Enforce Circuit Breaker"/>
+		<try doc:name="Create Flight">
+			<db:insert doc:name="Insert Flight" config-ref="MySql_Database_Config">
+				<db:sql><![CDATA[
+insert into american (ID, code1, price, takeOffDate, fromAirport, toAirport, seatsAvailable, planeType, totalSeats)
+values (:ID, :code, :price, :departureDate, :origin, :destination, :emptySeats, :planeType, :totalSeats)
+]]></db:sql>
+				<db:input-parameters><![CDATA[#[{
+  ID: payload.ID,
+  code: payload.code,
+  price: payload.price default 0,
+  departureDate: if (((payload.departureDate default "") as String) != "")
+                   (((payload.departureDate as String) replace "T" with " " replace "Z" with "") as String)
+                 else
+                   (now() as String {format: "yyyy-MM-dd HH:mm:ss"}),
+  origin: payload.origin default "",
+  destination: payload.destination default "",
+  emptySeats: payload.emptySeats default 0,
+  planeType: payload.plane."type" default "",
+  totalSeats: payload.plane.totalSeats default 0
+}]]]></db:input-parameters>
+			</db:insert>
+			<flow-ref name="recordDbSuccess" doc:name="Record DB Success"/>
+			<ee:transform doc:name="Create Success Response">
+				<ee:message>
+					<ee:set-payload resource="dwl/flight-create-response.dwl" />
+				</ee:message>
+			</ee:transform>
+			<error-handler>
+				<on-error-propagate type="DB:*">
+					<flow-ref name="recordDbFailure" doc:name="Record DB Failure"/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</flow>
+
+	<flow name="updateFlightById">
+		<set-variable variableName="flightId" value="#[(attributes.uriParams.ID default 0) as Number]" doc:name="Set Flight ID"/>
+		<logger level="INFO" doc:name="Log updateFlightById Start" message='txId=#[vars.transactionId default correlationId] event=updateFlightById.start flightId=#[vars.flightId]'/>
+		<flow-ref name="enforceCircuitBreaker" doc:name="Enforce Circuit Breaker"/>
+		<try doc:name="Update Flight + Notify">
+			<db:update doc:name="Update Flight" config-ref="MySql_Database_Config">
+				<db:sql><![CDATA[
+update american
+set code1 = :code,
+    price = :price,
+    takeOffDate = :departureDate,
+    fromAirport = :origin,
+    toAirport = :destination,
+    seatsAvailable = :emptySeats,
+    planeType = :planeType,
+    totalSeats = :totalSeats
+where ID = :id
+]]></db:sql>
+				<db:input-parameters><![CDATA[#[{
+  id: vars.flightId,
+  code: payload.code,
+  price: payload.price default 0,
+  departureDate: if (((payload.departureDate default "") as String) != "")
+                   (((payload.departureDate as String) replace "T" with " " replace "Z" with "") as String)
+                 else
+                   (now() as String {format: "yyyy-MM-dd HH:mm:ss"}),
+  origin: payload.origin default "",
+  destination: payload.destination default "",
+  emptySeats: payload.emptySeats default 0,
+  planeType: payload.plane."type" default "",
+  totalSeats: payload.plane.totalSeats default 0
+}]]]></db:input-parameters>
+			</db:update>
+			<db:select doc:name="Fetch Active Passenger Contacts" config-ref="MySql_Database_Config">
+				<db:sql><![CDATA[
+select passengerEmail from flight_bookings
+where flight_id = :id and status = 'ACTIVE'
+]]></db:sql>
+				<db:input-parameters><![CDATA[#[{ id: vars.flightId }]]]></db:input-parameters>
+			</db:select>
+			<set-variable variableName="passengerEmails" value="#[payload map ((item) -> item.passengerEmail)]" doc:name="Extract Passenger Emails"/>
+			<async doc:name="Notify Passengers Async">
+				<try doc:name="Fan-Out Notifications">
+					<scatter-gather doc:name="Parallel Notification Actions">
+						<route>
+							<foreach collection="#[vars.passengerEmails default []]" doc:name="Notify Each Passenger">
+								<set-payload doc:name="Build Notification Request Body" value="#[output application/json ---
+{
+  flightId: vars.flightId,
+  email: payload,
+  eventType: 'FLIGHT_UPDATED',
+  message: 'Flight details have been modified. Please review the updated itinerary.'
+}]"/>
+								<http:request method="POST" doc:name="Invoke Notification System API" config-ref="notification-http-request-config" path="#[p('notification.api.basePath') ++ '/notifications']">
+									<http:headers><![CDATA[#[{'Content-Type': 'application/json'}]]]></http:headers>
+								</http:request>
+							</foreach>
+						</route>
+						<route>
+							<logger level="INFO" doc:name="Audit Notification Dispatch" message='Dispatch complete for #[sizeOf(vars.passengerEmails default [])] passengers for flight #[vars.flightId]' />
+						</route>
+					</scatter-gather>
+					<error-handler>
+						<on-error-continue type="ANY">
+							<logger level="ERROR" doc:name="Notification Failure Log" message='Passenger notification failed for flight #[vars.flightId]. Error: #[error.description]' />
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</async>
+			<flow-ref name="recordDbSuccess" doc:name="Record DB Success"/>
+			<ee:transform doc:name="Build Update Response">
+				<ee:message>
+					<ee:set-payload resource="dwl/flight-update-response.dwl" />
+				</ee:message>
+			</ee:transform>
+			<error-handler>
+				<on-error-propagate type="DB:*">
+					<flow-ref name="recordDbFailure" doc:name="Record DB Failure"/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</flow>
+
+	<flow name="deleteFlightById" doc:id="bc015660-6307-4587-a7c1-cf0180908927">
+		<set-variable variableName="flightId" value="#[(attributes.uriParams.ID default 0) as Number]" doc:name="Set Flight ID"/>
+		<logger level="INFO" doc:name="Log deleteFlightById Start" message='txId=#[vars.transactionId default correlationId] event=deleteFlightById.start flightId=#[vars.flightId]'/>
+		<flow-ref name="enforceCircuitBreaker" doc:name="Enforce Circuit Breaker"/>
+		<try doc:name="Validate Then Delete">
+			<db:select doc:name="Check Flight Exists" config-ref="MySql_Database_Config">
+				<db:sql><![CDATA[
+select count(1) as flightCount
+from american
+where ID = :id
+]]></db:sql>
+				<db:input-parameters><![CDATA[#[{ id: vars.flightId }]]]></db:input-parameters>
+			</db:select>
+			<set-variable variableName="flightCount" value="#[(payload[0].flightCount default 0) as Number]" doc:name="Set Flight Count"/>
+			<choice doc:name="Validate Flight Exists">
+				<when expression="#[vars.flightCount > 0]">
+					<db:delete doc:name="Delete Flight" config-ref="MySql_Database_Config">
+						<db:sql><![CDATA[delete from american where ID = :id]]></db:sql>
+						<db:input-parameters><![CDATA[#[{ id: vars.flightId }]]]></db:input-parameters>
+					</db:delete>
+					<flow-ref name="recordDbSuccess" doc:name="Record DB Success"/>
+					<ee:transform doc:name="Delete Success Response">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Flight deleted successfully",
+  flightId: vars.flightId
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</when>
+				<otherwise>
+					<ee:transform doc:name="Build Not Found Response">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Flight " ++ (vars.flightId as String) ++ " not found",
+  flightId: vars.flightId
+}]]></ee:set-payload>
+						</ee:message>
+						<ee:variables>
+							<ee:set-variable variableName="httpStatus">404</ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+				</otherwise>
+			</choice>
+			<error-handler>
+				<on-error-propagate type="DB:*">
+					<flow-ref name="recordDbFailure" doc:name="Record DB Failure"/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</flow>
+
+	<flow name="postFlightsBatch">
+		<set-variable variableName="batchRequestId" value="#[uuid()]" doc:name="Set Batch Request ID"/>
+		<logger level="INFO" doc:name="Log postFlightsBatch Start" message='txId=#[vars.transactionId default correlationId] event=postFlightsBatch.start batchRequestId=#[vars.batchRequestId]'/>
+		<set-variable variableName="totalRecords" value="#[sizeOf(payload default [])]" doc:name="Set Total Records"/>
+		<batch:job jobName="flight-bulk-upsert-job">
+			<batch:process-records>
+				<batch:step name="upsert-flight-record-step">
+					<flow-ref name="enforceCircuitBreaker" doc:name="Enforce Circuit Breaker"/>
+					<try doc:name="Upsert Flight Record">
+						<db:insert doc:name="Upsert Flight" config-ref="MySql_Database_Config">
+							<db:sql><![CDATA[
+insert into american (ID, code1, price, takeOffDate, fromAirport, toAirport, seatsAvailable, planeType, totalSeats)
+values (:ID, :code, :price, :departureDate, :origin, :destination, :emptySeats, :planeType, :totalSeats)
+on duplicate key update
+  code1 = values(code1),
+  price = values(price),
+  takeOffDate = values(takeOffDate),
+  fromAirport = values(fromAirport),
+  toAirport = values(toAirport),
+  seatsAvailable = values(seatsAvailable),
+  planeType = values(planeType),
+  totalSeats = values(totalSeats)
+]]></db:sql>
+							<db:input-parameters><![CDATA[#[{
+  ID: payload.ID,
+  code: payload.code,
+  price: payload.price default 0,
+  departureDate: if (((payload.departureDate default "") as String) != "")
+                   (((payload.departureDate as String) replace "T" with " " replace "Z" with "") as String)
+                 else
+                   (now() as String {format: "yyyy-MM-dd HH:mm:ss"}),
+  origin: payload.origin default "",
+  destination: payload.destination default "",
+  emptySeats: payload.emptySeats default 0,
+  planeType: payload.plane."type" default "",
+  totalSeats: payload.plane.totalSeats default 0
+}]]]></db:input-parameters>
+						</db:insert>
+						<flow-ref name="recordDbSuccess" doc:name="Record DB Success"/>
+						<error-handler>
+							<on-error-continue type="ANY">
+								<set-variable variableName="failureKey" value="#[output application/java --- (vars.batchRequestId as String) ++ '-' ++ ((payload.ID default uuid()) as String)]" doc:name="Set Failure Key"/>
+								<os:store doc:name="Store Failed Record" objectStore="flightBatchFailureStore" key="#[vars.failureKey]">
+									<os:value><![CDATA[#[{
+  flightId: payload.ID default null,
+  payload: payload,
+  error: error.description default (error.errorType.identifier default "Unknown failure")
+}]]]></os:value>
+								</os:store>
+								<flow-ref name="recordDbFailure" doc:name="Record DB Failure"/>
+							</on-error-continue>
+						</error-handler>
+					</try>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete>
+				<os:retrieve-all-keys doc:name="Get Failure Keys" objectStore="flightBatchFailureStore" target="failureKeys"/>
+				<set-variable variableName="requestFailureKeys" value="#[(vars.failureKeys default []) filter (($ startsWith vars.batchRequestId))]" doc:name="Filter Request Failure Keys"/>
+				<set-variable variableName="failedRecords" value="#[[]]" doc:name="Init Failed Records"/>
+				<foreach collection="#[vars.requestFailureKeys]" doc:name="Load Failure Details">
+					<set-variable variableName="currentFailureKey" value="#[payload]" doc:name="Set Current Failure Key"/>
+					<os:retrieve doc:name="Retrieve Failure Detail" objectStore="flightBatchFailureStore" key="#[vars.currentFailureKey]"/>
+					<set-variable variableName="failedRecords" value="#[(vars.failedRecords default []) ++ [payload]]" doc:name="Append Failed Record"/>
+					<os:remove doc:name="Clear Failure Key" objectStore="flightBatchFailureStore" key="#[vars.currentFailureKey]"/>
+				</foreach>
+				<set-variable variableName="failedCount" value="#[sizeOf(vars.failedRecords default [])]" doc:name="Set Failed Count"/>
+				<set-variable variableName="successCount" value="#[output application/java --- ((vars.totalRecords default 0) as Number) - ((vars.failedCount default 0) as Number)]" doc:name="Set Success Count"/>
+				<ee:transform doc:name="Build Batch Summary">
+					<ee:message>
+						<ee:set-payload resource="dwl/batch-summary.dwl" />
+					</ee:message>
+				</ee:transform>
+				<choice doc:name="Send Completion Email If Enabled">
+					<when expression="#[p('notification.email.enabled') == 'true']">
+						<ee:transform doc:name="Build Consolidated Notification Payload">
+							<ee:message>
+								<ee:set-payload resource="dwl/notification-email-body.dwl" />
+							</ee:message>
+						</ee:transform>
+						<http:request method="POST" doc:name="Dispatch Consolidated Notification" config-ref="notification-http-request-config" path="#[p('notification.api.basePath') ++ '/emails']">
+							<http:headers><![CDATA[#[{'Content-Type': 'application/json'}]]]></http:headers>
+						</http:request>
+					</when>
+					<otherwise>
+						<logger level="INFO" doc:name="Log Batch Summary" message='Batch summary for #[vars.batchRequestId]: #[write(payload, "application/json")]'/>
+					</otherwise>
+				</choice>
+			</batch:on-complete>
+		</batch:job>
+		<set-payload value="#[output application/json ---
+{
+  message: 'Batch accepted for processing',
+  requestId: vars.batchRequestId
+}]" doc:name="Batch Accepted Response"/>
+		<set-variable variableName="httpStatus" value="202" doc:name="Set HTTP 202"/>
+	</flow>
+
+	<flow name="enforceCircuitBreaker">
+		<os:retrieve doc:name="Retrieve Circuit State" objectStore="flightCircuitStore" key="flight-db-circuit" target="circuitState">
+			<os:default-value><![CDATA[#[{state: 'CLOSED', failureCount: 0, openedAt: 0}]]]></os:default-value>
+		</os:retrieve>
+		<choice doc:name="Circuit State Guard">
+			<when expression="#[(vars.circuitState.state default 'CLOSED') == 'OPEN' and ((now() as Number {unit: 'milliseconds'}) - (vars.circuitState.openedAt default 0 as Number)) &lt; ((p('circuitBreaker.resetTimeoutMs') default '120000') as Number)]">
+				<raise-error type="APP:CIRCUIT_OPEN" description="Circuit breaker is OPEN for DB operations. Please retry later."/>
+			</when>
+			<when expression="#[(vars.circuitState.state default 'CLOSED') == 'OPEN']">
+				<os:store doc:name="Half-Open To Closed Reset" objectStore="flightCircuitStore" key="flight-db-circuit">
+					<os:value><![CDATA[#[{state: 'CLOSED', failureCount: 0, openedAt: 0}]]]></os:value>
+				</os:store>
+			</when>
+		</choice>
+	</flow>
+
+	<flow name="recordDbSuccess">
+		<logger level="DEBUG" doc:name="Log DB Success" message='txId=#[vars.transactionId default correlationId] event=recordDbSuccess'/>
+		<os:store doc:name="Reset Circuit On Success" objectStore="flightCircuitStore" key="flight-db-circuit">
+			<os:value><![CDATA[#[{state: 'CLOSED', failureCount: 0, openedAt: 0}]]]></os:value>
+		</os:store>
+	</flow>
+
+	<flow name="recordDbFailure">
+		<logger level="WARN" doc:name="Log DB Failure" message='txId=#[vars.transactionId default correlationId] event=recordDbFailure reason=#[error.description default "unknown"]'/>
+		<os:retrieve doc:name="Retrieve Circuit On Failure" objectStore="flightCircuitStore" key="flight-db-circuit" target="currentCircuitState">
+			<os:default-value><![CDATA[#[{state: 'CLOSED', failureCount: 0, openedAt: 0}]]]></os:default-value>
+		</os:retrieve>
+		<set-variable variableName="updatedFailureCount" value="#[(vars.currentCircuitState.failureCount default 0) + 1]" doc:name="Increment Failure Count"/>
+		<set-variable variableName="threshold" value="#[(p('circuitBreaker.failureThreshold') default '3') as Number]" doc:name="Load Failure Threshold"/>
+		<choice doc:name="Open Circuit If Threshold Reached">
+			<when expression="#[vars.updatedFailureCount &gt;= vars.threshold]">
+				<os:store doc:name="Open Circuit" objectStore="flightCircuitStore" key="flight-db-circuit">
+					<os:value><![CDATA[#[{
+  state: 'OPEN',
+  failureCount: vars.updatedFailureCount,
+  openedAt: now() as Number {unit: "milliseconds"}
+}]]]></os:value>
+				</os:store>
+			</when>
+			<otherwise>
+				<os:store doc:name="Keep Circuit Closed But Count Failure" objectStore="flightCircuitStore" key="flight-db-circuit">
+					<os:value><![CDATA[#[{
+  state: 'CLOSED',
+  failureCount: vars.updatedFailureCount,
+  openedAt: 0
+}]]]></os:value>
+				</os:store>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

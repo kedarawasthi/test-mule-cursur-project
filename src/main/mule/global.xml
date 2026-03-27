@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+
+	<configuration-properties doc:name="Environment Properties" file='config-${mule.env}.properties' />
+	<configuration-properties doc:name="Environment Secure Properties" file='config-${mule.env}-secure.properties' />
+
+	<db:config name="MySql_Database_Config" doc:name="Database Config" doc:id="a05e160a-1bfc-412f-922e-5d570ea83313">
+		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" password="${db.password}" database="${db.database}" />
+	</db:config>
+
+	<os:object-store name="flightCircuitStore" persistent="true" maxEntries="5000" entryTtl="120000" expirationInterval="60000" />
+	<os:object-store name="flightBatchFailureStore" persistent="true" maxEntries="5000" entryTtl="86400000" expirationInterval="300000" />
+
+	<http:listener-config name="american-airlines-info-api-httpListenerConfig">
+		<http:listener-connection host="${http.host}" port="${http.port}" />
+	</http:listener-config>
+
+	<http:request-config name="notification-http-request-config" doc:name="Notification API Request Config">
+		<http:request-connection protocol="${notification.api.protocol}" host="${notification.api.host}" port="${notification.api.port}" />
+	</http:request-config>
+
+	<http:request-config name="external-logging-http-request-config" doc:name="External Logging HTTP Request Config">
+		<http:request-connection protocol="${external.logging.protocol}" host="${external.logging.host}" port="${external.logging.port}" />
+	</http:request-config>
+
+</mule>

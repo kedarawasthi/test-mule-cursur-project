@@ -1,0 +1,36 @@
+http:
+  host: 0.0.0.0
+  port: "8085"
+
+db:
+  host: ec2-3-21-224-150.us-east-2.compute.amazonaws.com
+  port: "3306"
+  user: mule
+  password: mulepass
+  database: training
+
+#db:
+#  host: mudb.learn.mulesoft.com
+#  port: "3306"
+#  user: mule
+#  password: mule
+#  database: training
+
+circuitBreaker:
+  failureThreshold: "3"
+  resetTimeoutMs: "120000"
+
+notification:
+  api:
+    protocol: HTTPS
+    host: notify.example.com
+    port: "443"
+    basePath: /api/v1
+  email:
+    enabled: "false"
+    host: smtp.example.com
+    port: "587"
+    user: no-reply@example.com
+    password: change-me
+    from: no-reply@example.com
+    to: ops@example.com

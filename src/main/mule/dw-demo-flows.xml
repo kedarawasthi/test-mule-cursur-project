@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+	<!-- ================================================ -->
+	<!-- DataWeave Demo Endpoints                         -->
+	<!-- POST body with sample data, get transformed back -->
+	<!-- ================================================ -->
+
+	<flow name="dw-demo-simple-json-to-json">
+		<http:listener config-ref="american-airlines-info-api-httpListenerConfig" path="/dw/simple" allowedMethods="POST">
+			<http:response statusCode="200">
+				<http:headers>#[{'Content-Type': 'application/json'}]</http:headers>
+			</http:response>
+		</http:listener>
+		<logger level="INFO" message="DW Demo: simple-transformation-json-to-json" />
+		<ee:transform doc:name="Simple JSON to JSON">
+			<ee:message>
+				<ee:set-payload resource="dwl/usecases/simple-transformation-json-to-json.dwl" />
+			</ee:message>
+		</ee:transform>
+	</flow>
+
+	<flow name="dw-demo-complex-xml-to-json">
+		<http:listener config-ref="american-airlines-info-api-httpListenerConfig" path="/dw/complex" allowedMethods="POST">
+			<http:response statusCode="200">
+				<http:headers>#[{'Content-Type': 'application/json'}]</http:headers>
+			</http:response>
+		</http:listener>
+		<logger level="INFO" message="DW Demo: complex-transformation-xml-to-json" />
+		<ee:transform doc:name="Complex XML to JSON">
+			<ee:message>
+				<ee:set-payload resource="dwl/usecases/complex-transformation-xml-to-json.dwl" />
+			</ee:message>
+		</ee:transform>
+	</flow>
+
+	<flow name="dw-demo-multi-scenario-1-json-to-xml">
+		<http:listener config-ref="american-airlines-info-api-httpListenerConfig" path="/dw/multi1" allowedMethods="POST">
+			<http:response statusCode="200">
+				<http:headers>#[{'Content-Type': 'application/xml'}]</http:headers>
+			</http:response>
+		</http:listener>
+		<logger level="INFO" message="DW Demo: multi-scenario-1-json-to-xml" />
+		<ee:transform doc:name="Multi Scenario 1 JSON to XML">
+			<ee:message>
+				<ee:set-payload resource="dwl/usecases/multi-scenario-1-json-to-xml.dwl" />
+			</ee:message>
+		</ee:transform>
+	</flow>
+
+	<flow name="dw-demo-multi-scenario-2-xml-to-json">
+		<http:listener config-ref="american-airlines-info-api-httpListenerConfig" path="/dw/multi2" allowedMethods="POST">
+			<http:response statusCode="200">
+				<http:headers>#[{'Content-Type': 'application/json'}]</http:headers>
+			</http:response>
+		</http:listener>
+		<logger level="INFO" message="DW Demo: multi-scenario-2-xml-to-json" />
+		<ee:transform doc:name="Multi Scenario 2 XML to JSON">
+			<ee:message>
+				<ee:set-payload resource="dwl/usecases/multi-scenario-2-xml-to-json.dwl" />
+			</ee:message>
+		</ee:transform>
+	</flow>
+
+</mule>
