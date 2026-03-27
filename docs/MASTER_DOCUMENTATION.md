@@ -16,6 +16,8 @@ This is the consolidated index and navigation page for the full documentation se
    - Successful prompt log, execution windows, commands, and failure resolutions.
 6. `docs/CURSOR_TDLC_METRICS_FILLED.md`
    - Filled Cursor matrix for attached TDLC capability/task evaluation sheets.
+7. `docs/EXECUTIVE_SCORECARD.md`
+   - Presentation-ready one-page leadership summary of Cursor TDLC performance.
 
 ## Operational Verification Snapshot
 

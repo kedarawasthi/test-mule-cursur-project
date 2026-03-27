@@ -45,6 +45,7 @@ def main() -> None:
         ("Project Lifecycle and Workflows", docs_dir / "PROJECT_LIFECYCLE_AND_WORKFLOWS.md"),
         ("Prompt Execution Ledger", docs_dir / "PROMPT_EXECUTION_LEDGER.md"),
         ("Cursor TDLC Metrics", docs_dir / "CURSOR_TDLC_METRICS_FILLED.md"),
+        ("Executive Scorecard", docs_dir / "EXECUTIVE_SCORECARD.md"),
     ]
 
     for section_title, path in files:

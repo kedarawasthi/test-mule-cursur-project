@@ -73,6 +73,7 @@ This index catalogs all major project resources, operational artifacts, and gove
 - `docs/RESOURCE_INDEX.md` - This file.
 - `docs/PROMPT_EXECUTION_LEDGER.md` - Successful prompt ledger, timelines, commands, failures, fixes.
 - `docs/CURSOR_TDLC_METRICS_FILLED.md` - Filled Cursor-specific TDLC metrics from attached matrix.
+- `docs/EXECUTIVE_SCORECARD.md` - Executive one-page scorecard for leadership review.
 
 ## 10) Runtime-Only Local Investigation Artifacts
 
