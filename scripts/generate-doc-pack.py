@@ -46,6 +46,7 @@ def main() -> None:
         ("Prompt Execution Ledger", docs_dir / "PROMPT_EXECUTION_LEDGER.md"),
         ("Platform Operations Runbook", docs_dir / "PLATFORM_OPERATIONS_RUNBOOK.md"),
         ("Detailed Regression Test Results", docs_dir / "REGRESSION_TEST_RESULTS_DETAILED.md"),
+        ("Code Review Comments and Fixes Proposed", docs_dir / "CODE_REVIEW_COMMENTS_AND_FIXES_PROPOSED.md"),
         ("Cursor TDLC Metrics", docs_dir / "CURSOR_TDLC_METRICS_FILLED.md"),
         ("Executive Scorecard", docs_dir / "EXECUTIVE_SCORECARD.md"),
     ]

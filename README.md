@@ -18,6 +18,7 @@ Production-style MuleSoft implementation for airline flight operations, DataWeav
 - Prompt ledger (commands, failures, fixes): `docs/PROMPT_EXECUTION_LEDGER.md`
 - Platform operations runbook (assets/APIM/contracts): `docs/PLATFORM_OPERATIONS_RUNBOOK.md`
 - Detailed regression matrix (input/expected/observed): `docs/REGRESSION_TEST_RESULTS_DETAILED.md`
+- Code review findings and proposed fixes: `docs/CODE_REVIEW_COMMENTS_AND_FIXES_PROPOSED.md`
 - Filled TDLC metrics (Cursor): `docs/CURSOR_TDLC_METRICS_FILLED.md`
 - Consolidated Word pack: `docs/MASTER_DOCUMENTATION.docx`
 - Exchange-facing page: `exchange-docs/home.md`

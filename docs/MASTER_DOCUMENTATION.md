@@ -18,9 +18,11 @@ This is the consolidated index and navigation page for the full documentation se
    - Step-by-step platform runbook for Design Center, Exchange, API instances, policies, and contracts.
 7. `docs/REGRESSION_TEST_RESULTS_DETAILED.md`
    - Detailed happy/error-path matrix with input, expected output, and observed output.
-8. `docs/CURSOR_TDLC_METRICS_FILLED.md`
+8. `docs/CODE_REVIEW_COMMENTS_AND_FIXES_PROPOSED.md`
+   - Unbiased code review findings with prioritized remediation plan and definition of done.
+9. `docs/CURSOR_TDLC_METRICS_FILLED.md`
    - Filled Cursor matrix for attached TDLC capability/task evaluation sheets.
-9. `docs/EXECUTIVE_SCORECARD.md`
+10. `docs/EXECUTIVE_SCORECARD.md`
    - Presentation-ready one-page leadership summary of Cursor TDLC performance.
 
 ## Postman Playbook
