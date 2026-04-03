@@ -16,6 +16,7 @@ Production-style MuleSoft implementation for airline flight operations, DataWeav
 - HLD/LLD: `docs/HLD_LLD.md`
 - Lifecycle and workflows: `docs/PROJECT_LIFECYCLE_AND_WORKFLOWS.md`
 - Prompt ledger (commands, failures, fixes): `docs/PROMPT_EXECUTION_LEDGER.md`
+- Airline prompt-time ledger (complete elapsed + TDLC correlation): `docs/AIRLINE_PROMPT_EXECUTION_TIME_LEDGER.md`
 - Platform operations runbook (assets/APIM/contracts): `docs/PLATFORM_OPERATIONS_RUNBOOK.md`
 - Detailed regression matrix (input/expected/observed): `docs/REGRESSION_TEST_RESULTS_DETAILED.md`
 - Code review findings and proposed fixes: `docs/CODE_REVIEW_COMMENTS_AND_FIXES_PROPOSED.md`

@@ -44,6 +44,7 @@ def main() -> None:
         ("HLD and LLD", docs_dir / "HLD_LLD.md"),
         ("Project Lifecycle and Workflows", docs_dir / "PROJECT_LIFECYCLE_AND_WORKFLOWS.md"),
         ("Prompt Execution Ledger", docs_dir / "PROMPT_EXECUTION_LEDGER.md"),
+        ("Airline Prompt Execution Time Ledger", docs_dir / "AIRLINE_PROMPT_EXECUTION_TIME_LEDGER.md"),
         ("Platform Operations Runbook", docs_dir / "PLATFORM_OPERATIONS_RUNBOOK.md"),
         ("Detailed Regression Test Results", docs_dir / "REGRESSION_TEST_RESULTS_DETAILED.md"),
         ("Code Review Comments and Fixes Proposed", docs_dir / "CODE_REVIEW_COMMENTS_AND_FIXES_PROPOSED.md"),
